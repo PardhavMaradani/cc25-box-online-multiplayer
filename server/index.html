@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <!-- required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- bootstrap css -->
+        <link rel="stylesheet" href="/css/bootstrap.min.css">
+        <!-- ui css -->
+        <link rel="stylesheet" href="/css/ui.css">
+        <title>Server Status</title>
+    </head>
+    <body>
+        <!-- svg icons -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="d-none">
+            <symbol id="check-circle-fill" viewBox="0 0 16 16">
+                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+            </symbol>
+            <symbol id="x-circle-fill" viewBox="0 0 16 16">
+                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293z"/>
+            </symbol>
+            <symbol id="github" viewBox="0 0 16 16">
+                <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8"/>
+            </symbol>
+        </svg>
+        <!-- sticky-top -->
+        <div id="error" class="sticky-top alert alert-danger rounded-0 mb-2">
+            <div class="d-flex align-items-center">
+                <svg class="bi flex-shrink-0 me-2" role="img" width="20" height="20"><use xlink:href="#x-circle-fill"/></svg>
+                <div id="errorText">Connecting ...</div>
+            </div>
+        </div>
+        <div id="connected" class="sticky-top alert alert-success collapse rounded-0 mb-2">
+            <div class="d-flex align-items-center">
+                <svg class="bi flex-shrink-0 me-2" role="img" width="20" height="20"><use xlink:href="#check-circle-fill"/></svg>
+                <div>Connected to Server</div>
+            </div>
+        </div>
+        <!-- Layout -->
+        <div class="container-fluid p-4 pt-1 text-center">
+            <div class="row">
+                <div class="col-md-9 p-1">
+                    <div class="accordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#statusPanel"">
+                                    Status
+                                </button>
+                            </h2>
+                            <div id="statusPanel" class="accordion-collapse collapse show">
+                                <div class="accordion-body p-0">
+                                    <ul id="statusList" class="list-group list-group-flush text-start bg-light rounded-bottom"></ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 p-1">
+                    <div class="accordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#playersPanel"">
+                                    Players Online &nbsp; <span id="nPlayers" class="badge text-bg-success">0</span>
+                                </button>
+                            </h2>
+                            <div id="playersPanel" class="accordion-collapse collapse show">
+                                <div class="accordion-body p-0" style="max-height:500px;overflow-y:scroll;">
+                                    <ol id="playersList" class="list-group list-group-flush text-start bg-light rounded-bottom"></ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-9 mt-3">
+                    <a class="icon-link" href="https://github.com/PardhavMaradani/cc25-box-online-multiplayer" target="_blank">
+                        <svg class="bi"><use xlink:href="#github"></use></svg>cc25-box-online-multiplayer
+                    </a>
+                </div>
+            </div>
+        </div>
+        <!-- bootstrap js -->
+        <script src="/js/bootstrap.min.js"></script>
+        <!-- socket.io js -->
+        <script src="/socket.io/socket.io.js"></script>
+        <!-- ui js -->
+        <script src="/js/ui.js"></script>
+    </body>
+</html>

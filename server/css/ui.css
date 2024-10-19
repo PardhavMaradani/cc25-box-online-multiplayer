@@ -1,0 +1,19 @@
+/* UI Custom Styles */
+.accordion {
+    --bs-accordion-btn-bg: #cfe2ff;
+    --bs-accordion-border-color: #c0c0c0;
+}
+.table-responsive {
+    margin: -0.75px;
+    margin-top: 0px;
+}
+th {
+    position: sticky;
+    top: 0;
+    outline: 1px solid #c0c0c0;
+    outline-offset: -0.5px;
+    z-index: 1;
+}
+#statusList {
+    white-space: pre;
+}

@@ -1,0 +1,100 @@
+#game-report { font: 12pt Arial, sans-serif; }
+#game-report h3 { color: #1F78B4; font-size: 100%; }
+
+/* Scores */
+#game-report #scores { text-align: center; }
+
+#game-report #scores pre {
+	background-color: black;
+	color: black;
+	display: inline-block;
+	margin-top: 1em;
+	padding: 1em 1em .75em;
+	font-family: monospace;
+	font-weight: bold;
+	min-width: 100px;
+	text-shadow: white 0 0 5px;
+}
+
+/* Game container of the canvases */
+#game-container { position: relative; }
+#game-container #canvas-1 { z-index: 1; }
+#game-container #canvas-2 {
+	position: absolute;
+	left: 0;
+	top: 0;
+	z-index: 1000;
+}
+
+/* button bar */
+#game-report .button-bar {
+	width: max-content;
+	margin: 1em auto;
+}
+#game-report .button-bar button {
+	background-color: #E0E0E0;
+	background-image: linear-gradient(to bottom, #DDDDDD, #CCCCCC);
+	border: none;
+	display: inline-block;
+	font-size: 14px;
+	font-weight: 400;
+	line-height: 1.428;
+	margin: 0;
+	padding: .5em 1.5em;
+	text-align: center;
+	white-space: nowrap;
+}
+#game-report .button-bar button:hover, #game-report .button-bar button:focus, #game-report .button-bar button:active {
+	background-color: #FF9800;
+	background-image: linear-gradient(to bottom, #FF9800, #EE8800);
+	color: #FFFFFF;
+	cursor: pointer;
+}
+#game-report .button-bar button:active {
+	background-color: #EF6C00;
+	background-image: linear-gradient(to bottom, #EF6C00, #DF5C00);
+}
+
+/* move table */
+#move-table { vertical-align: top; padding-left: 1em; }
+#move-table > div {
+    max-height: 752px;
+    overflow-y: auto;
+	width: 300px;
+}
+
+#move-table table {
+    border-collapse: collapse;
+    margin: 0 auto;
+    width: 285px;
+}
+
+#move-table tr { cursor: pointer; }
+#move-table tr.zebra { background-color: #e5e8ff; }
+#move-table tr#cur-move th { border-right: none;}
+#move-table tr#cur-move td { border-left: none; border-right: none; }
+#move-table tr#cur-move td:last-child { border-right: 1px solid #bbb; }
+
+#move-table tr#cur-move {
+    background: #A8D800;
+    cursor: default;
+    border-left: none;
+    border-right: none;
+}
+
+#move-table td, #move-table th {
+    border: 1px solid #ddd;
+    padding: 5px 5px;
+    font-size: 12px;
+    text-align: center;
+}
+
+#move-table td { font-family: monospace; }
+#move-table tbody th { text-align: right; width: 1em; }
+
+#move-table thead th {
+    background-color: #eeeeee;
+    padding-left: 2px;
+    padding-right: 2px;
+}
+

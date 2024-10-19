@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <!-- required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- bootstrap css -->
+        <link rel="stylesheet" href="/css/bootstrap.min.css">
+        <!-- ui css -->
+        <link rel="stylesheet" href="/css/ui.css">
+        <title>Local Client UI</title>
+    </head>
+    <body>
+        <!-- svg icons -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="d-none">
+            <symbol id="check-circle-fill" viewBox="0 0 16 16">
+                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+            </symbol>
+            <symbol id="x-circle-fill" viewBox="0 0 16 16">
+                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293z"/>
+            </symbol>
+        </svg>
+        <!-- sticky-top -->
+        <div id="error" class="sticky-top alert alert-danger rounded-0">
+            <div class="d-flex align-items-center">
+                <svg class="bi flex-shrink-0 me-2" role="img" width="20" height="20"><use xlink:href="#x-circle-fill"/></svg>
+                <div id="errorText">Connecting ...</div>
+                <button id="errorClose" type="button" class="btn-close collapse"></button>
+            </div>
+        </div>
+        <div id="connected" class="sticky-top alert alert-success collapse rounded-0">
+            <div class="d-flex align-items-center">
+                <svg class="bi flex-shrink-0 me-2" role="img" width="20" height="20"><use xlink:href="#check-circle-fill"/></svg>
+                <div>UI &nbsp;&#8660;&nbsp; Local Client &nbsp;&#8660;&nbsp; Remote Server</div>
+            </div>
+        </div>
+        <!-- Stop Session Modal -->
+        <div id="stopSessionModal" class="modal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Stop Session</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>You have scheduled matches.</p>
+                    <p>Are you sure you want to stop the current session?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                    <button id="stopSession" type="button" class="btn btn-primary" data-bs-dismiss="modal">Yes</button>
+                </div>
+                </div>
+            </div>
+        </div>
+        <!-- Clear All Games Modal -->
+        <div id="clearAllGamesModal" class="modal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Clear All Games</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to clear all the previous games?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                    <button id="clearAllGamesYes" type="button" class="btn btn-primary" data-bs-dismiss="modal">Yes</button>
+                </div>
+                </div>
+            </div>
+        </div>
+        <!-- Session start / stop -->
+        <div class="container col-md-5 ps-3 pe-3 mb-2 pb-1">
+            <form class="row needs-validation" novalidate>
+                <div class="input-group">
+                    <input id="playerName" type="text" value="" class="form-control bg-light" placeholder="Player Name" maxlength="32" required pattern="^[\w\-.]+$">
+                    <button id="session" class="btn btn-secondary rounded-end" type="btn">Start Session</button>
+                    <div class="invalid-feedback">Please enter a valid player name (^[\w\-.]+$)</div>
+                </div>
+            </form>
+        </div>
+        <!-- Layout -->
+        <div class="container-fluid p-4 pt-0 text-center">
+            <div class="row">
+                <div class="col-md-9 p-1">
+                    <div class="accordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#currentMatchesPanel"">
+                                    Current Match
+                                </button>
+                            </h2>
+                            <div id="currentMatchesPanel" class="accordion-collapse collapse show">
+                                <div class="accordion-body bg-light p-0">
+                                    <div class="p-1">
+                                        <span id="currentMatchInfo">No current match</span>
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-bordered m-0 table-light">
+                                            <thead class="table-secondary">
+                                                <tr>
+                                                    <th scope="col">RR</th>
+                                                    <th scope="col">Round</th>
+                                                    <th scope="col">Opponent</th>
+                                                    <th scope="col">P</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="currentMatch"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#scheduledMatchesPanel">
+                                    Scheduled Matches &nbsp; <span id="nScheduled" class="badge text-bg-secondary">0</span>
+                                </button>
+                            </h2>
+                            <div id="scheduledMatchesPanel" class="accordion-collapse collapse show">
+                                <div class="accordion-body bg-light p-0">
+                                    <div class="p-1">
+                                        <span id="scheduledMatchesInfo">No scheduled matches</span>
+                                    </div>
+                                    <div class="table-responsive" style="max-height:500px;overflow-y:scroll;">
+                                        <table class="table table-sm table-bordered m-0 table-light">
+                                            <thead class="table-secondary">
+                                                <tr>
+                                                    <th scope="col">RR</th>
+                                                    <th scope="col">Round</th>
+                                                    <th scope="col">Opponent</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="scheduledMatches"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#statsPanel">
+                                    Aggregate Stats
+                                </button>
+                            </h2>
+                            <div id="statsPanel" class="accordion-collapse collapse show">
+                                <div class="accordion-body bg-light p-0">
+                                    <div class="p-1">
+                                        <span>Stats for last <span id="nAggGames"></span> completed games</span>
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-bordered m-0 table-light">
+                                            <thead class="table-secondary">
+                                                <tr>
+                                                    <th scope="col">T</th>
+                                                    <th scope="col">W</th>
+                                                    <th scope="col">L</th>
+                                                    <th scope="col">D</th>
+                                                    <th scope="col" class="table-success">W<small>%</small></th>
+                                                    <th scope="col">W<sub>1</sub><small>%</small></th>
+                                                    <th scope="col">W<sub>2</sub><small>%</small></th>
+                                                    <th scope="col" class="table-danger">L<small>%</small></th>
+                                                    <th scope="col">D<small>%</small></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="aggStats"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#completedGamesPanel">
+                                    Completed Games &nbsp; <span id="nCompleted" class="badge text-bg-secondary">0</span></button>
+                                </button>
+                            </h2>
+                            <div id="completedGamesPanel" class="accordion-collapse collapse show">
+                                <div class="accordion-body bg-light rounded p-0">
+                                    <div class="p-1">
+                                        <span id="completedGamesInfo">No completed games</span>
+                                    </div>
+                                    <div class="table-responsive" style="max-height:500px;overflow-y:scroll;">
+                                        <table class="table table-sm table-bordered m-0 table-light">
+                                            <thead class="table-secondary">
+                                                <tr>
+                                                    <th scope="col">RR</th>
+                                                    <th scope="col">Opponent</th>
+                                                    <th scope="col">P</th>
+                                                    <th scope="col">Score</th>
+                                                    <th scope="col">Result</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="completedGames"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="m-2"></div>
+                        <div class="accordion-item rounded-top border border-dark-subtle pt-0">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button rounded-top" type="button" data-bs-toggle="collapse" data-bs-target="#statusPanel"">
+                                    Server Status
+                                </button>
+                            </h2>
+                            <div id="statusPanel" class="accordion-collapse collapse show">
+                                <div class="accordion-body p-0">
+                                    <ul id="statusList" class="list-group list-group-flush text-start bg-light rounded-bottom"></ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 p-1">
+                    <div class="accordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#playersPanel"">
+                                    Players Online &nbsp; <span id="nPlayers" class="badge text-bg-success">0</span>
+                                </button>
+                            </h2>
+                            <div id="playersPanel" class="accordion-collapse collapse show">
+                                <div class="accordion-body p-0" style="max-height:500px;overflow-y:scroll;">
+                                    <ol id="playersList" class="list-group list-group-flush text-start bg-light rounded-bottom"></ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="allGamesDiv" class="col-md-9 mt-2">
+                    <a id="allGames" href="" class="btn btn-link icon-link pe-2" target="_blank">All Games</a>|<a id="clearAllGames" href="" class="btn btn-link icon-link ps-2">Clear All Games</a>
+                </div>
+            </div>
+        </div>
+        <!-- bootstrap js -->
+        <script src="/js/bootstrap.min.js"></script>
+        <!-- socket.io js -->
+        <script src="/socket.io/socket.io.js"></script>
+        <!-- ui js -->
+        <script src="/js/ui.js"></script>
+    </body>
+</html>

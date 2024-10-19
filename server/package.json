@@ -1,0 +1,21 @@
+{
+  "name": "cc25-box-online-multiplayer-server",
+  "version": "1.0",
+  "description": "Server Side of CodeCup 2025 Box Online Multiplayer",
+  "type": "commonjs",
+  "main": "index.js",
+  "author": "Pardhav Maradani",
+  "license": "MIT",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/PardhavMaradani/cc25-box-online-multiplayer"
+  },
+  "dependencies": {
+    "bootstrap": "^5.3.3",
+    "express": "^4.21.0",
+    "socket.io": "^4.8.0"
+  }
+}
