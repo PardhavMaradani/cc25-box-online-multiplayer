@@ -1,8 +1,8 @@
 # CodeCup 2025 Box Online Multiplayer
 
-Sources for an unofficial online multiplayer version of [CodeCup 2025](https://www.codecup.nl/intro.php) contest game [Box](https://www.codecup.nl/rules.php).
+An unofficial online multiplayer version of [CodeCup 2025](https://www.codecup.nl/intro.php) contest game [Box](https://www.codecup.nl/rules.php).
 
-The purpose of this is to allow contestants to have their programs play against one another **online** while they build and improve their programs for the test and final competitions of CodeCup 2025.  Contestants don't have to share their source code or the program binaries - their program runs locally on their own systems and **only** the game moves are transmitted over to the other players - everything else like the completed game HTML's and logs generated are all local to the contestant.
+The purpose of this is to allow contestants to have their programs play against other programs **online** while they build and improve their programs for the test and final competitions of CodeCup 2025.  Contestants don't have to share their source code or the program binaries - their programs runs locally on their own systems and **only** the game moves are transmitted over to the other players - everything else like the completed game HTML's and logs generated are all local to the contestant.
 
 The Box Online Multiplayer version has two components.  A **server** component that is hosted on a publicly accessible server and a **client** component that contestants run locally on their systems which invokes their program to play the Box games.  This repo has sources for both the components, but contestants only need the **client** component to participate.
 
@@ -23,8 +23,10 @@ Here are the instructions to get started:
 git clone https://github.com/PardhavMaradani/cc25-box-online-multiplayer.git
 cd cc25-box-online-multiplayer/client
 npm install
-npm start -- -s https://box.servegame.com -p <your_executable_box_program>
+npm start -- -s https://box.servegame.com -p <path/to/your/executable/box/program>
 ```
+
+> The program passed above with the `-p` option should be a single executable file.  Programs written in some languages (eg: Java) will need to be packaged within an executable script and the script should be passed as the parameter
 
 After these commands are run in a terminal window, you should see something similar to:
 
@@ -52,7 +54,7 @@ All games are organised session wise (between a `Start Session` and an `End Sess
 
 ![All games link](images/all-games-link.png)
 
-The `All Games` UI looks something like this, where you can browse per session and filter as needed as shown below:
+The `All Games` UI looks something like this, where you can browse per session and filter files as shown below:
 
 ![All games UI](images/all-games-ui.png)
 
@@ -61,7 +63,7 @@ The `All Games` UI looks something like this, where you can browse per session a
 If you only need the command line interface, you can start the **client** with a `-v` and `-a` options as seen below.  For a full list of all available **client** options, check out the [Client](client/README.md) page.
 
 ```
-npm start -- -s https://box.servegame.com -p <your_executable_box_program> -v -a
+npm start -- -s https://box.servegame.com -p <path/to/your/executable/box/program> -v -a
 ```
 
 The `-v` option is to write verbose logs and the `-a` option is to auto start a session.
