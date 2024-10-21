@@ -166,7 +166,6 @@ function setNewRoundTimeout() {
     state.rr.roundTimeout = setTimeout(() => {
         if (state.rr.rounds[state.rr.currentRound].nDone == state.rr.gamesPerRound) {
             cerror("RR", state.rr.rrN, "round", state.rr.currentRound, "timedout, but all games done");
-            checkCurrentRoundDone();
             return;
         }
         vlog("RR", state.rr.rrN, "round", state.rr.currentRound, "timedout");
@@ -385,6 +384,9 @@ server.on("connection", (socket) => {
             cerror("game:ready - Opponent not in round-robin for", player, "vs", opponent);
             // mark game as done to avoid a full timeout
             state.rr.rounds[game.round].nDone++;
+            state.rr.nDone++;
+            state.nDone++;
+            checkCurrentRoundDone();
             return;
         }
         game.nReady++;
