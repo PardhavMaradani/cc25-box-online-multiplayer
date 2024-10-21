@@ -23,7 +23,7 @@ Here are the instructions to get started:
 git clone https://github.com/PardhavMaradani/cc25-box-online-multiplayer.git
 cd cc25-box-online-multiplayer/client
 npm install
-npm start -- -s https://box.servegame.com -p <path/to/your/executable/box/program>
+npm start -- -s https://box.servegame.com -p /path/to/your/executable/box/program
 ```
 
 > The program passed above with the `-p` option should be a single executable file.  Programs written in some languages (eg: Java) will need to be packaged within an executable script and the script should be passed as the parameter
@@ -44,7 +44,7 @@ You should see somthing like this in the browser while the games are in progress
 
 ## Game Results and Logs
 
-You can click on the **Result** link in the games under the `Completed Games` section to see a familiar `caia` generated game HTML output as follows:
+You can click on the **Result** link in the games under the `Completed Games` section to see a familiar [`caia`](https://www.codecup.nl/download_caia.php) generated game HTML output as follows:
 
 ![Sample game result](images/sample-game-result.png)
 
@@ -63,7 +63,7 @@ The `All Games` UI looks something like this, where you can browse per session a
 If you only need the command line interface, you can start the **client** with a `-v` and `-a` options as seen below.  For a full list of all available **client** options, check out the [Client](client/README.md) page.
 
 ```
-npm start -- -s https://box.servegame.com -p <path/to/your/executable/box/program> -v -a
+npm start -- -s https://box.servegame.com -p /path/to/your/executable/box/program -v -a
 ```
 
 The `-v` option is to write verbose logs and the `-a` option is to auto start a session.

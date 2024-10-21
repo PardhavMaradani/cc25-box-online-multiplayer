@@ -3,7 +3,6 @@ const { join } = require("node:path");
 const { createServer } = require("node:http");
 const { parseArgs } = require("node:util");
 const express = require("express");
-const { stat } = require("node:fs");
 
 const params = {};
 
@@ -167,6 +166,7 @@ function setNewRoundTimeout() {
     state.rr.roundTimeout = setTimeout(() => {
         if (state.rr.rounds[state.rr.currentRound].nDone == state.rr.gamesPerRound) {
             cerror("RR", state.rr.rrN, "round", state.rr.currentRound, "timedout, but all games done");
+            checkCurrentRoundDone();
             return;
         }
         vlog("RR", state.rr.rrN, "round", state.rr.currentRound, "timedout");
@@ -196,9 +196,6 @@ function generateRR() {
     state.rr.games = {};
     state.rr.schedule = {};
     state.rr.rrN = state.rr.schedule.rrN = state.rrN++;
-    //if (state.rrN == 10000) {
-    //    state.rrN = 1;
-    //}
     state.rr.schedule.rounds = [];
     const bye = "<bye>";
     let pNames = shuffle(Object.keys(state.players));
