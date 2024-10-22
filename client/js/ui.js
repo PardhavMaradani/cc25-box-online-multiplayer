@@ -3,6 +3,7 @@ let players = [];
 let noFiles = false;
 let programBasename = null;
 const socketTimeout = 3000;
+let completedGamesFilter = "";
 
 function toggleSessionButtonInteraction(enabled) {
     document.getElementById("session").disabled = !enabled;
@@ -42,14 +43,6 @@ function setScheduledMatchesInfo(info) {
     document.getElementById("scheduledMatchesInfo").innerText = info;
 }
 
-function addScheduledMatchesRow(rr, round, opponent) {
-    let scheduledMatches = document.getElementById("scheduledMatches");
-    let row = scheduledMatches.insertRow();
-    row.insertCell().innerText = rr;
-    row.insertCell().innerText = round;
-    row.insertCell().innerText = opponent;
-}
-
 function setNScheduledMatches(n, rr) {
     const nScheduled = document.getElementById("nScheduled");
     nScheduled.innerText = n;
@@ -74,9 +67,14 @@ function setScheduledMatches(inSession, playerName, schedule) {
         if (schedule.length == 0) {
             setScheduledMatchesInfo("Waiting for next round-robin ...");
         } else {
+            const scheduledMatches = document.createElement("tbody");
             for (let m = 0; m < schedule.length; m++) {
-                addScheduledMatchesRow(schedule[m].rrN, (schedule[m].round + 1), schedule[m].opponent);
+                const row = scheduledMatches.insertRow();
+                row.insertCell().innerText = schedule[m].rrN;
+                row.insertCell().innerText = schedule[m].round + 1;
+                row.insertCell().innerText = schedule[m].opponent;
             }
+            document.getElementById("scheduledMatches").innerHTML = scheduledMatches.innerHTML;
             setNScheduledMatches(schedule.length, schedule[0].rrN);
         }
     }
@@ -126,7 +124,26 @@ function clearAllGames() {
     });
 }
 
-function setClickHandlers() {
+function clearCompletedGamesFilter() {
+    completedGamesFilter = document.getElementById("completedGamesFilter").value = "";
+    document.getElementById("completedGamesFilterClose").classList.add("collapse");
+    const clonedNode = document.getElementById("completedGames").cloneNode(true);
+    clonedNode.querySelectorAll("tr").forEach((row) => {
+        row.classList.remove("collapse");
+    });
+    document.getElementById("completedGames").replaceWith(clonedNode);
+}
+
+function applyCompletedGamesFilter() {
+    document.getElementById("completedGamesFilterClose").classList.remove("collapse");
+    const clonedNode = document.getElementById("completedGames").cloneNode(true);
+    clonedNode.querySelectorAll("tr").forEach((row) => {
+        row.classList.toggle("collapse", !row.innerText.toLowerCase().includes(completedGamesFilter));
+    });
+    document.getElementById("completedGames").replaceWith(clonedNode);
+}
+
+function setHandlers() {
     // session button
     document.getElementById("stopSession").addEventListener("click", (event) => {
         new bootstrap.Modal(document.getElementById("stopSessionModal")).hide();
@@ -196,6 +213,21 @@ function setClickHandlers() {
         document.getElementById("errorClose").classList.add("collapse");
         hideError();
     });
+    // completed games filter
+    document.getElementById("completedGamesFilter").addEventListener("keyup", (event) => {
+        event.stopPropagation();
+        const filter = event.target.value.trim().toLowerCase();
+        if (event.key === "Escape" || filter.length == 0) {
+            clearCompletedGamesFilter();
+        } else {
+            completedGamesFilter = event.target.value.trim().toLowerCase();
+            applyCompletedGamesFilter();
+        }
+    });
+    // completed games filter clear
+    document.getElementById("completedGamesFilterClose").addEventListener("click", (event) => {
+        clearCompletedGamesFilter();
+    });
 }
 
 function showError(message, allowClose) {
@@ -231,7 +263,7 @@ function addStatusRow(statusList, name, value) {
 }
 
 
-setClickHandlers();
+setHandlers();
 
 const socket = io();
 
@@ -302,8 +334,7 @@ socket.on("session:status", (status) => {
 });
 
 socket.on("game:status", (game) => {
-    const currentMatch = document.getElementById("currentMatch");
-    currentMatch.innerHTML = "";
+    const currentMatch = document.createElement("tbody");
     document.getElementById("currentMatchInfo").innerText = "No current match";
     if (game) {
         const prefix = " Round [" + (game.round + 1) + "/" + game.tr + "] Game [" + game.g + "/2] - ";
@@ -312,7 +343,7 @@ socket.on("game:status", (game) => {
         } else {
             document.getElementById("currentMatchInfo").innerHTML = prefix + "Waiting for <b>" + game.opponent + "</b> ...";
         }
-        let row = currentMatch.insertRow();
+        const row = currentMatch.insertRow();
         row.insertCell().innerText = game.rrN;
         row.insertCell().innerText = game.round + 1;
         row.insertCell().innerText = game.opponent;
@@ -327,6 +358,7 @@ socket.on("game:status", (game) => {
             pSMRow = game.SMRow;
         }
     }
+    document.getElementById("currentMatch").innerHTML = currentMatch.innerHTML;
 });
 
 socket.on("players", (players) => {
@@ -374,11 +406,10 @@ socket.on("completed:games", (n, games, stats, programBasename) => {
         nCompleted.classList.add("text-bg-secondary");
         document.getElementById("completedGamesInfo").innerText = "No completed games";
     }
-    const completedGames = document.getElementById("completedGames");
-    completedGames.innerHTML = "";
+    const completedGames = document.createElement("tbody");
     for (let i = 0; i < games.length; i++) {
-        let game = games[games.length - 1 - i];
-        let row = completedGames.insertRow();
+        const game = games[games.length - 1 - i];
+        const row = completedGames.insertRow();
         row.insertCell().innerText = game.rrN;
         row.insertCell().innerText = game.opponent;
         row.insertCell().innerText = game.p;
@@ -394,11 +425,16 @@ socket.on("completed:games", (n, games, stats, programBasename) => {
         } else if (game.result == "LOSS") {
             row.classList.add("table-danger");
         }
+        if (completedGamesFilter != "" && !row.innerText.toLowerCase().includes(completedGamesFilter)) {
+            row.classList.add("collapse");
+        }
     }
-    const aggStats = document.getElementById("aggStats");
-    aggStats.innerHTML = "";
-    let row = aggStats.insertRow();
+    document.getElementById("completedGames").innerHTML = completedGames.innerHTML;
+    const aggStats = document.createElement("tbody");
+    const row = aggStats.insertRow();
     Object.values(stats).forEach((stat) => {
         row.insertCell().innerText = stat;
     });
+    document.getElementById("aggStats").innerHTML = aggStats.innerHTML;
+
 });

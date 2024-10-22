@@ -501,6 +501,7 @@ function startProgram() {
     });
     program.stdout.on("data", (data) => {
         const move = data.toString().trim();
+        // TODO: this move is not validated
         const tile = move.slice(0, 2) + gameState.inputTileColors + move.slice(2);
         gamePlaceTile(tile);
         gameState.moves.push(tile);
