@@ -295,7 +295,7 @@ function getBoxGameHTML(data) {
 
 function gameWriteHTML(score, oppColor, oppScore) {
     const game = gameState.game;
-    const gs = "rr-" + game.rrN + "-r-" + (game.round + 1) + "-p-" + game.p;
+    let gs = "rr-" + game.rrN + "-r-" + (game.round + 1) + "-p-" + game.p;
     let p1c = (game.p == 1) ? gameState.myColor : oppColor;
     let p2c = (game.p == 1) ? oppColor : gameState.myColor;
     let p1r;
@@ -303,13 +303,16 @@ function gameWriteHTML(score, oppColor, oppScore) {
     if (gameState.myScore == oppScore) {
         p1r = "_DRAW";
         p2r = "_DRAW";
+        gs += "-d-";
     } else {
         if (gameState.myScore > oppScore) {
             p1r = (game.p == 1) ? "_WIN" : "_LOSE";
             p2r = (game.p == 1) ? "_LOSE" : "_WIN";
+            gs += "-w-";
         } else {
             p1r = (game.p == 1) ? "_LOSE" : "_WIN";
             p2r = (game.p == 1) ? "_WIN" : "_LOSE";
+            gs += "-l-";
         }
     }
     let data = {
@@ -325,7 +328,7 @@ function gameWriteHTML(score, oppColor, oppScore) {
         p2c: p2c,
         logs: gameState.logs
     };
-    const gameHTML = join(state.sessionFolderPath, gs + "-o-" + game.opponent + ".html");
+    const gameHTML = join(state.sessionFolderPath, gs + "o-" + game.opponent + ".html");
     try {
         if (!fs.existsSync(state.sessionFolderPath)) {
             fs.mkdirSync(state.sessionFolderPath, { recursive: true });
@@ -500,6 +503,10 @@ function startProgram() {
         }
     });
     program.stdout.on("data", (data) => {
+        if (!(gameState.game && gameState.game.inProgress)) {
+            cerror("program:stdout - game not in progress");
+            return;
+        }
         const move = data.toString().trim();
         // TODO: this move is not validated
         const tile = move.slice(0, 2) + gameState.inputTileColors + move.slice(2);
@@ -584,6 +591,7 @@ serverSocket.on("players", (players) => {
         startSession((response) => {
             if (response.status == "ok") {
                 vlog("Session auto started");
+                vlog("Waiting for next round-robin ...")
             } else if (response.status == "error") {
                 process.exit(1);
             }

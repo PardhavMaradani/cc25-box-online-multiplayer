@@ -414,16 +414,19 @@ socket.on("completed:games", (n, games, stats, programBasename) => {
         row.insertCell().innerText = game.opponent;
         row.insertCell().innerText = game.p;
         row.insertCell().innerText = game.score;
-        const gameFile = "rr-" + game.rrN + "-r-" + (game.round + 1) + "-p-" + game.p + "-o-" + game.opponent + ".html"
+        let r = "-d-"
+        if (game.result == "WIN") {
+            row.classList.add("table-success");
+            r = "-w-";
+        } else if (game.result == "LOSS") {
+            row.classList.add("table-danger");
+            r = "-l-";
+        }
+        const gameFile = "rr-" + game.rrN + "-r-" + (game.round + 1) + "-p-" + game.p + r + "o-" + game.opponent + ".html"
         if (noFiles) {
             row.insertCell().innerText = game.result;
         } else {
             row.insertCell().innerHTML = "<a class='btn btn-link p-0' href='all-games/" + programBasename + "/" + game.sessionFolderName + "/" + gameFile + "' target='_blank'>" + game.result + "</a>";
-        }
-        if (game.result == "WIN") {
-            row.classList.add("table-success");
-        } else if (game.result == "LOSS") {
-            row.classList.add("table-danger");
         }
         if (completedGamesFilter != "" && !row.innerText.toLowerCase().includes(completedGamesFilter)) {
             row.classList.add("collapse");
