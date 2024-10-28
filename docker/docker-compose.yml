@@ -20,7 +20,7 @@ services:
     build:
       context: ..
       dockerfile: docker/server/Dockerfile
-    command: node index.js -m 4 ${SERVER_PARAMS}
+    command: node index.js -m 4 -t 120 ${SERVER_PARAMS}
 
   caia-players:
     build:
