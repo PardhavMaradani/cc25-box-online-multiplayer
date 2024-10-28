@@ -265,7 +265,7 @@ function addStatusRow(statusList, name, value) {
 
 setHandlers();
 
-const socket = io();
+const socket = io({path: new URL('socket.io', location).pathname});
 
 socket.on("connect", () => {
 });
