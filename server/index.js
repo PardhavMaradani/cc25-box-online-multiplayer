@@ -1,8 +1,8 @@
-const { Server } = require("socket.io");
-const { join } = require("node:path");
-const { createServer } = require("node:http");
-const { parseArgs } = require("node:util");
-const express = require("express");
+import { Server } from 'socket.io';
+import { join } from 'node:path';
+import { createServer } from 'node:http';
+import { parseArgs } from 'node:util';
+import express from 'express';
 
 const params = {};
 
@@ -113,10 +113,10 @@ httpServer.on("error", (error) => {
 });
 app.use("/js", express.static("js"));
 app.use("/css", express.static("css"));
-app.use("/css", express.static(join(__dirname, "node_modules/bootstrap/dist/css")));
-app.use("/js", express.static(join(__dirname, "node_modules/bootstrap/dist/js")));
+app.use("/css", express.static(join(import.meta.dirname, "node_modules/bootstrap/dist/css")));
+app.use("/js", express.static(join(import.meta.dirname, "node_modules/bootstrap/dist/js")));
 app.get("/", (req, res) => {
-    res.sendFile(join(__dirname, "index.html"));
+    res.sendFile(join(import.meta.dirname, "index.html"));
 });
 httpServer.listen(params.port, () => {
     clog("Server is listening on port", httpServer.address().port);

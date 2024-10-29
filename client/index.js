@@ -1,12 +1,12 @@
-const { Server } = require("socket.io");
-const { join, basename } = require("node:path");
-const { createServer } = require("node:http");
-const { parseArgs } = require("node:util");
-const { spawn } = require("child_process");
-const Client = require("socket.io-client");
-const serveIndex = require("serve-index");
-const express = require("express");
-const fs = require("fs");
+import { Server } from 'socket.io';
+import { join, basename } from 'node:path';
+import { createServer } from 'node:http';
+import { parseArgs } from 'node:util';
+import { spawn } from 'node:child_process';
+import Client from 'socket.io-client';
+import serveIndex from 'serve-index';
+import express from 'express';
+import fs from 'node:fs';
 
 const params = {};
 
@@ -253,7 +253,7 @@ function startSession(ack) {
             if (response.status == "ok") {
                 const date = new Date();
                 state.sessionFolderName = date.toDateString().replace(/ /g, "-") + "-" + date.toLocaleTimeString().replace(/:| /g, "-");
-                state.sessionFolderPath = join(__dirname, "all-games", params.programBasename, state.sessionFolderName);
+                state.sessionFolderPath = join(import.meta.dirname, "all-games", params.programBasename, state.sessionFolderName);
                 state.inSession = true;
                 ack({ status: "ok" });
                 vlog("Session started for player", state.playerName);
@@ -545,11 +545,11 @@ if (!params.noUI) {
     });
     app.use("/js", express.static("js"));
     app.use("/css", express.static("css"));
-    app.use("/css", express.static(join(__dirname, "node_modules/bootstrap/dist/css")));
-    app.use("/js", express.static(join(__dirname, "node_modules/bootstrap/dist/js")));
-    app.use("/all-games", express.static("all-games"), serveIndex(join(__dirname, "all-games"), {"icons": true}));
+    app.use("/css", express.static(join(import.meta.dirname, "node_modules/bootstrap/dist/css")));
+    app.use("/js", express.static(join(import.meta.dirname, "node_modules/bootstrap/dist/js")));
+    app.use("/all-games", express.static("all-games"), serveIndex(join(import.meta.dirname, "all-games"), {"icons": true}));
     app.get("/", (req, res) => {
-        res.sendFile(join(__dirname, "index.html"));
+        res.sendFile(join(import.meta.dirname, "index.html"));
     });
     uiServer.listen(params.uiPort, () => {
         clog("UI available at http://localhost:" + uiServer.address().port);
@@ -740,7 +740,7 @@ async function removeRecursively(directory) {
 }
 
 function clearAllGames(callback) {
-    const folderPath = join(__dirname, "all-games", params.programBasename);
+    const folderPath = join(import.meta.dirname, "all-games", params.programBasename);
     removeRecursively(folderPath).then(() => {
         fs.mkdirSync(folderPath, { recursive: true });
         state.completedGames = [];

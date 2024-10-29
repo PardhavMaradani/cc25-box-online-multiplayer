@@ -2,8 +2,8 @@
   "name": "cc25-box-online-multiplayer-server",
   "version": "1.0",
   "description": "Server Side of CodeCup 2025 Box Online Multiplayer",
-  "type": "commonjs",
-  "main": "index.js",
+  "type": "module",
+  "exports": "./index.js",
   "author": "Pardhav Maradani",
   "license": "MIT",
   "scripts": {
