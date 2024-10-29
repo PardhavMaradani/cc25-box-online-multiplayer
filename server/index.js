@@ -124,20 +124,21 @@ httpServer.listen(params.port, () => {
 });
 
 const defaultData = {
-    players: {},
+    players: {
+        "caia-player1": { nGames: 200000 },
+        "caia-player2": { nGames: 200000 },
+        "caia-player3": { nGames: 200000 }
+    },
     stats: {
         "caia-player1": {
-            "nGames": 200000,
             "caia-player2": { nGames: 100000, nWins: 528 },
             "caia-player3": { nGames: 100000, nWins: 320 },
         },
         "caia-player2": {
-            "nGames": 200000,
             "caia-player1": { nGames: 100000, nWins: 99472 },
             "caia-player3": { nGames: 100000, nWins: 18727 },
         },
         "caia-player3": {
-            "nGames": 200000,
             "caia-player1": { nGames: 100000, nWins: 99680 },
             "caia-player2": { nGames: 100000, nWins: 81273 },
         }
@@ -207,13 +208,14 @@ function calculate_performance(approx_rating, player) {
 }
 
 function calculate_ratings() {
+    const players = state.rr.players;
     const stats = db.data.stats;
     const approx_rating = {};
 
     /* calulate an initial rating estimates from anchor player */
     const anchor = "caia-player1";
     approx_rating[anchor] = 0;
-    state.rr.players.forEach(player => {
+    players.forEach(player => {
         if (player == anchor) return;
         if (stats[player][anchor].nGames == 0) {
             approx_rating[player] = 1200;
@@ -227,25 +229,25 @@ function calculate_ratings() {
 
     /* iterative procedure to update all ratings */
     let lastsum = -1e9, sum = 0;
-    for (let iter = 0; iter < 100 && (lastsum + state.rr.players.length <= sum); iter++) {
+    for (let iter = 0; iter < 100 && (lastsum + players.length <= sum); iter++) {
         lastsum = sum; sum = 0;
         const new_approx_rating = {}; /* Avoid mixing updated and unupdated ratings in calculation */
-        state.rr.players.forEach(player => {
+        players.forEach(player => {
             new_approx_rating[player] = calculate_performance(approx_rating, player);
         });
-        state.rr.players.forEach((player) => {
+        players.forEach((player) => {
             approx_rating[player] = new_approx_rating[player] - new_approx_rating[anchor];
         });
-        state.rr.players.forEach((player) => {
+        players.forEach((player) => {
             sum += approx_rating[player];
         });
     }
 
     vlog("Ratings", JSON.stringify(approx_rating, null, 2));
+    const now = Date.now();
     Object.keys(approx_rating).forEach(player => {
-        updateLastSeen(player);
-        db.data.players[player].rating = approx_rating[player];
-        db.data.players[player].nGames = db.data.stats[player].nGames;
+        db.data.players[player].lastSeen = now;
+        db.data.players[player].rating = Number(approx_rating[player].toFixed(0));
     });
     saveDB();
 }
@@ -268,6 +270,7 @@ function checkCurrentRoundDone() {
             vlog(state.nDone, "total games completed");
             // calculate ratings
             calculate_ratings();
+            emitPlayersOnline(); // to show updated ratings
             emitNewSchedule();
         }
     }
@@ -353,14 +356,31 @@ function invalidGameId(gameId) {
     return (gameId == null || isNaN(gameId) || gameId < 0 || gameId >= state.rr.nGames);
 }
 
-function emitPlayers(socket) {
+function emitPlayersOnline(socket) {
+    const players = {};
+    Object.keys(state.players).forEach(player => {
+        if (db.data.players[player] && db.data.players[player].nGames > 100 && db.data.players[player].rating != null) {
+            players[player] = db.data.players[player].rating;
+        } else {
+            players[player] = -4000;
+        }
+    });
+    if (socket) {
+        server.to(socket.id).emit("players:online", players);
+    } else {
+        server.emit("players:online", players);
+        vlog("Players online :", players);
+    }
+}
+
+function emitPlayers(socket) { // deprecated - use emitPlayersOnline
     const players = Object.keys(state.players);
     if (socket) {
         server.to(socket.id).emit("players", players);
     } else {
         server.emit("players", players);
-        vlog("Players :", players);
     }
+    emitPlayersOnline(socket);
 }
 
 function uiEmitStatus() {
@@ -405,10 +425,10 @@ function updateStats(game) {
     const p1 = game.p1.name;
     const p2 = game.p2.name;
     if (!db.data.stats[p1]) {
-        db.data.stats[p1] = { nGames: 0 };
+        db.data.stats[p1] = {};
     }
     if (!db.data.stats[p2]) {
-        db.data.stats[p2] = { nGames: 0};
+        db.data.stats[p2] = {};
     }
     if (!db.data.stats[p1][p2]) {
         db.data.stats[p1][p2] = { nGames: 0, nWins: 0 };
@@ -416,9 +436,9 @@ function updateStats(game) {
     if (!db.data.stats[p2][p1]) {
         db.data.stats[p2][p1] = { nGames: 0, nWins: 0 };
     }
-    db.data.stats[p1].nGames++;
+    db.data.players[p1].nGames++;
+    db.data.players[p2].nGames++;
     db.data.stats[p1][p2].nGames++;
-    db.data.stats[p2].nGames++;
     db.data.stats[p2][p1].nGames++;
     if (game.p1.score > game.p2.score) {
         db.data.stats[p1][p2].nWins++;
@@ -432,9 +452,10 @@ function updateStats(game) {
 
 function updateLastSeen(player) {
     if (!db.data.players[player]) {
-        db.data.players[player] = {};
+        db.data.players[player] = { nGames: 0 };
     }
     db.data.players[player].lastSeen = Date.now();
+    saveDB();
 }
 
 server.on("connection", (socket) => {
@@ -614,6 +635,7 @@ server.on("connection", (socket) => {
             return;
         }
         const player = state.socket2Player[socket.id];
+        // TODO: cross check scores
         if (game.p1.name == player) {
             game.p1.score = score;
         } else if (game.p2.name == player) {

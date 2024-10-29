@@ -227,8 +227,17 @@
                                 </button>
                             </h2>
                             <div id="playersPanel" class="accordion-collapse collapse show">
-                                <div class="accordion-body p-0" style="max-height:500px;overflow-y:scroll;">
-                                    <ol id="playersList" class="list-group list-group-flush text-start bg-light rounded-bottom"></ol>
+                                <div class="table-responsive" style="max-height:500px;overflow-y:scroll;">
+                                    <table class="table table-sm table-bordered m-0 table-light">
+                                        <thead class="table-secondary">
+                                            <tr>
+                                                <th scope="col"></th>
+                                                <th scope="col">Name</th>
+                                                <th scope="col">Rating</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="playersList"></tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>

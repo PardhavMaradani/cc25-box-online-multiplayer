@@ -235,7 +235,7 @@ function clearSessionAndGameState() {
 }
 
 function duplicatePlayerName(playerName) {
-    return state.players.includes(playerName);
+    return Object.keys(state.players).includes(playerName);
 }
 
 function startSession(ack) {
@@ -259,8 +259,8 @@ function startSession(ack) {
                 vlog("Session started for player", state.playerName);
                 uiEmitSessionStatus();
             } else {
-                ack({ status: "error", message: response.message });
                 cerror("startSession error :", response.message);
+                ack({ status: "error", message: response.message });
             }
         }
         state.startSessionInProgress = false;
@@ -573,15 +573,15 @@ serverSocket.on("connect_error", (error) => {
 });
 
 serverSocket.on("disconnect", (reason, details) => {
-  state.serverConnected = false;
-  clearSessionAndGameState();
-  uiEmitServerConnected();
-  cerror("Disconnected from server", params.serverURL);
+    state.serverConnected = false;
+    clearSessionAndGameState();
+    uiEmitServerConnected();
+    cerror("Disconnected from server", params.serverURL);
 });
 
-serverSocket.on("players", (players) => {
+serverSocket.on("players:online", (players) => {
     state.players = players;
-    uiEmitPlayers()
+    uiEmitPlayersOnline()
     vlog("Players online :", players);
     if (state.autoStart && !state.inSession && !state.startSessionInProgress) {
         if (duplicatePlayerName(state.playerName)) {
@@ -591,7 +591,7 @@ serverSocket.on("players", (players) => {
         startSession((response) => {
             if (response.status == "ok") {
                 vlog("Session auto started");
-                vlog("Waiting for next round-robin ...")
+                vlog("Waiting for next round-robin ...");
             } else if (response.status == "error") {
                 process.exit(1);
             }
@@ -775,8 +775,8 @@ function uiEmitGameStatus() {
     ui.emit("game:status", gameState.game);
 }
 
-function uiEmitPlayers() {
-    ui.emit("players", state.players);
+function uiEmitPlayersOnline() {
+    ui.emit("players:online", state.players);
 }
 
 function uiEmitCompletedGames() {
@@ -815,7 +815,7 @@ ui.on("connection", (socket) => {
     uiEmitSessionStatus();
     uiEmitServerConnected();
     uiEmitGameStatus();
-    uiEmitPlayers();
+    uiEmitPlayersOnline();
     uiEmitCompletedGames();
     uiEmitServerStatus();
     socket.on("disconnect", (reason) => {

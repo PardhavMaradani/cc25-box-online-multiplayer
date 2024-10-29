@@ -362,36 +362,28 @@ socket.on("game:status", (game) => {
     document.getElementById("currentMatch").innerHTML = currentMatch.innerHTML;
 });
 
-socket.on("players", (players) => {
-    players = players;
+socket.on("players:online", (playersOnline) => {
+    players = Object.keys(playersOnline);
+    const sortedPlayers = Object.entries(playersOnline).sort((a,b) => b[1]-a[1]);
+    const nP = sortedPlayers.length;
     const nPlayers = document.getElementById("nPlayers");
-    nPlayers.innerText = players.length;
-    if (players.length > 0) {
+    nPlayers.innerText = nP;
+    if (nP > 0) {
         nPlayers.classList.remove("text-bg-secondary");
         nPlayers.classList.add("text-bg-success");
     } else {
         nPlayers.classList.remove("text-bg-success");
         nPlayers.classList.add("text-bg-secondary");
     }
-    const playersList = document.getElementById("playersList");
-    playersList.classList.remove("list-group-numbered");
-    playersList.innerHTML = "<li class='list-group-item text-center bg-light'>No players</li>";
-    if (players.length > 0) {
-        playersList.innerHTML = "";
-        playersList.classList.add("list-group-numbered");
-    }
-    const playerName = document.getElementById("playerName").value;
-    players.forEach((player) => {
-        let playerElem = document.createElement("li");
-        playerElem.classList.add("list-group-item");
-        if (player == playerName) {
-            playerElem.classList.add("list-group-item-info");
-        } else {
-            playerElem.classList.add("bg-light");
-        }
-        playerElem.innerText = player;
-        playersList.appendChild(playerElem);
+    const playersList = document.createElement("tbody");
+    let i = 1;
+    sortedPlayers.forEach((item) => {
+        const row = playersList.insertRow();
+        row.insertCell().innerText = i++;
+        row.insertCell().innerText = item[0];
+        row.insertCell().innerText = item[1] == -4000 ? "-" : item[1];
     });
+    document.getElementById("playersList").innerHTML = playersList.innerHTML;
 });
 
 socket.on("completed:games", (n, games, stats, programBasename) => {
