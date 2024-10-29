@@ -21,6 +21,8 @@ services:
       context: ..
       dockerfile: docker/server/Dockerfile
     command: node index.js -m 4 -t 120 ${SERVER_PARAMS}
+    volumes:
+      - ../server/db:/build/db
 
   caia-players:
     build:

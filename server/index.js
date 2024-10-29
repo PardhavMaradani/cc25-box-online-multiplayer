@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { createServer } from 'node:http';
 import { parseArgs } from 'node:util';
 import express from 'express';
+import { JSONFilePreset } from 'lowdb/node';
 
 const params = {};
 
@@ -122,6 +123,29 @@ httpServer.listen(params.port, () => {
     clog("Server is listening on port", httpServer.address().port);
 });
 
+const defaultData = {
+    players: {},
+    stats: {
+        "caia-player1": {
+            "nGames": 200000,
+            "caia-player2": { nGames: 100000, nWins: 528 },
+            "caia-player3": { nGames: 100000, nWins: 320 },
+        },
+        "caia-player2": {
+            "nGames": 200000,
+            "caia-player1": { nGames: 100000, nWins: 99472 },
+            "caia-player3": { nGames: 100000, nWins: 18727 },
+        },
+        "caia-player3": {
+            "nGames": 200000,
+            "caia-player1": { nGames: 100000, nWins: 99680 },
+            "caia-player2": { nGames: 100000, nWins: 81273 },
+        }
+    }
+};
+const db = await JSONFilePreset("db/db.json", defaultData);
+dlog("Load DB", JSON.stringify(db, null, 2));
+
 const state = {
     players: {},
     socket2Player: {},
@@ -143,6 +167,91 @@ function sixShuffle() {
     return shuffle([1, 2, 3, 4, 5, 6]);
 }
 
+async function saveDB() {
+    await db.write();
+    dlog("Save DB", JSON.stringify(db, null, 2));
+}
+
+/* ELO calculations - begin - Code contributed by Tapani Utriainen */
+
+const ln10 = Math.log(10.0);
+
+function pow10(x) {
+    return Math.exp(x * ln10);
+}
+
+function elo_win_prob(rating_difference) {
+    return 1.0 / (1.0 + pow10(-rating_difference / 400.0));
+}
+
+function calculate_performance(approx_rating, player) {
+    const stats = db.data.stats;
+
+    /* use last estimate as initial guess for new estimate */
+    let low = -1000, high = 4000, guessed_rating = approx_rating[player];
+
+    /* binary search to find the most likely rating */
+    while (high > low + 1.0) {
+        let actual_score = 0, expected_score = 1e-5;
+        state.rr.players.forEach(opponent => {
+            if (player == opponent || stats[player][opponent].nGames == 0) return;
+            const win_prob = elo_win_prob(guessed_rating - approx_rating[opponent]);
+            expected_score += stats[player][opponent].nGames * win_prob;
+            actual_score += stats[player][opponent].nWins;
+        });
+        if (expected_score < actual_score) low = guessed_rating; else high = guessed_rating;
+        guessed_rating = 0.5 * (low + high);
+    }
+
+    return high;
+}
+
+function calculate_ratings() {
+    const stats = db.data.stats;
+    const approx_rating = {};
+
+    /* calulate an initial rating estimates from anchor player */
+    const anchor = "caia-player1";
+    approx_rating[anchor] = 0;
+    state.rr.players.forEach(player => {
+        if (player == anchor) return;
+        if (stats[player][anchor].nGames == 0) {
+            approx_rating[player] = 1200;
+            return;
+        }
+        let win_rate = stats[player][anchor].nWins / stats[player][anchor].nGames;
+        if (stats[player][anchor].nWins == stats[player][anchor].nGames)  win_rate -= 1e-3;
+        if (stats[player][anchor].nWins == 0) win_rate = 1e-3;
+        approx_rating[player] = -400 * Math.log10((1.0 - win_rate) / win_rate);
+    });
+
+    /* iterative procedure to update all ratings */
+    let lastsum = -1e9, sum = 0;
+    for (let iter = 0; iter < 100 && (lastsum + state.rr.players.length <= sum); iter++) {
+        lastsum = sum; sum = 0;
+        const new_approx_rating = {}; /* Avoid mixing updated and unupdated ratings in calculation */
+        state.rr.players.forEach(player => {
+            new_approx_rating[player] = calculate_performance(approx_rating, player);
+        });
+        state.rr.players.forEach((player) => {
+            approx_rating[player] = new_approx_rating[player] - new_approx_rating[anchor];
+        });
+        state.rr.players.forEach((player) => {
+            sum += approx_rating[player];
+        });
+    }
+
+    vlog("Ratings", JSON.stringify(approx_rating, null, 2));
+    Object.keys(approx_rating).forEach(player => {
+        updateLastSeen(player);
+        db.data.players[player].rating = approx_rating[player];
+        db.data.players[player].nGames = db.data.stats[player].nGames;
+    });
+    saveDB();
+}
+
+/* ELO calculations - end */
+
 function checkCurrentRoundDone() {
     if (state.rr.rounds[state.rr.currentRound].nDone == state.rr.gamesPerRound) {
         vlog("RR", state.rr.rrN, "round", state.rr.currentRound, "done");
@@ -157,6 +266,8 @@ function checkCurrentRoundDone() {
             state.rrInProgress = false;
             vlog("RR", state.rr.rrN, "done :", state.rr.nDone, "/", state.rr.nGames, "games completed");
             vlog(state.nDone, "total games completed");
+            // calculate ratings
+            calculate_ratings();
             emitNewSchedule();
         }
     }
@@ -198,6 +309,7 @@ function generateRR() {
     state.rr.schedule.rounds = [];
     const bye = "<bye>";
     let pNames = shuffle(Object.keys(state.players));
+    state.rr.players = pNames.slice();
     if (pNames.length % 2 != 0) {
         pNames.push(bye);
     }
@@ -289,6 +401,42 @@ function emitNewSchedule() {
     setNewRoundTimeout();
 }
 
+function updateStats(game) {
+    const p1 = game.p1.name;
+    const p2 = game.p2.name;
+    if (!db.data.stats[p1]) {
+        db.data.stats[p1] = { nGames: 0 };
+    }
+    if (!db.data.stats[p2]) {
+        db.data.stats[p2] = { nGames: 0};
+    }
+    if (!db.data.stats[p1][p2]) {
+        db.data.stats[p1][p2] = { nGames: 0, nWins: 0 };
+    }
+    if (!db.data.stats[p2][p1]) {
+        db.data.stats[p2][p1] = { nGames: 0, nWins: 0 };
+    }
+    db.data.stats[p1].nGames++;
+    db.data.stats[p1][p2].nGames++;
+    db.data.stats[p2].nGames++;
+    db.data.stats[p2][p1].nGames++;
+    if (game.p1.score > game.p2.score) {
+        db.data.stats[p1][p2].nWins++;
+    } else if (game.p2.score > game.p1.score) {
+        db.data.stats[p2][p1].nWins++;
+    } else {
+        db.data.stats[p1][p2].nWins += 0.5;
+        db.data.stats[p2][p1].nWins += 0.5;
+    }
+}
+
+function updateLastSeen(player) {
+    if (!db.data.players[player]) {
+        db.data.players[player] = {};
+    }
+    db.data.players[player].lastSeen = Date.now();
+}
+
 server.on("connection", (socket) => {
     vlog("Client connected");
     emitPlayers(socket);
@@ -322,6 +470,7 @@ server.on("connection", (socket) => {
         }
         state.players[player] = { inRR: false };
         state.socket2Player[socket.id] = player;
+        updateLastSeen(player);
         vlog("Session started for player", player);
         ack({ status: "ok" });
         emitPlayers();
@@ -465,8 +614,17 @@ server.on("connection", (socket) => {
             return;
         }
         const player = state.socket2Player[socket.id];
+        if (game.p1.name == player) {
+            game.p1.score = score;
+        } else if (game.p2.name == player) {
+            game.p2.score = score;
+        } else {
+            cerror("game:done - player not in game", player, game);
+            return;
+        }
         game.nDone++;
         if (game.nDone == 2) {
+            updateStats(game);
             state.rr.rounds[game.round].nDone++;
             state.rr.nDone++;
             state.nDone++;
