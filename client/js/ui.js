@@ -375,8 +375,12 @@ socket.on("leaderboard", (leaderboard) => {
     document.getElementById("nLBPlayers").innerText = sortedLeaderboard.length;
     const leaderboardList = document.createElement("tbody");
     let i = 1;
+    const playerName = document.getElementById("playerName").value;
     sortedLeaderboard.forEach((item) => {
         const row = leaderboardList.insertRow();
+        if (item.name == playerName) {
+            row.classList.add("table-info");
+        }
         row.insertCell().innerText = i++;
         row.insertCell().innerHTML = item.name + "<div><small class='fw-light'>" + item.lastSeen + "d ago, " + item.nGames + " games</small></div>";
         row.insertCell().innerText = item.rating == -4000 ? "-" : item.rating;
@@ -397,10 +401,14 @@ socket.on("players:online", (playersOnline) => {
         nPlayers.classList.remove("text-bg-success");
         nPlayers.classList.add("text-bg-secondary");
     }
+    const playerName = document.getElementById("playerName").value;
     const playersList = document.createElement("tbody");
     let i = 1;
     sortedPlayers.forEach((item) => {
         const row = playersList.insertRow();
+        if (item[0] == playerName) {
+            row.classList.add("table-info");
+        }
         row.insertCell().innerText = i++;
         row.insertCell().innerText = item[0];
         row.insertCell().innerText = item[1] == -4000 ? "-" : item[1];
