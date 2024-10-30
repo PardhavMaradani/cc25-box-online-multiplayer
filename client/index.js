@@ -184,7 +184,8 @@ const state = {
     serverConnected: false,
     autoStart: params.autoStart,
     playerName: params.playerName,
-    players: [],
+    players: {},
+    leaderboard: {},
     completedGames: [],
     nCompletedGames: 0,
     serverStatus: null
@@ -581,8 +582,8 @@ serverSocket.on("disconnect", (reason, details) => {
 
 serverSocket.on("players:online", (players) => {
     state.players = players;
-    uiEmitPlayersOnline()
-    vlog("Players online :", players);
+    uiEmitPlayersOnline();
+    vlog("Players online :", state.players);
     if (state.autoStart && !state.inSession && !state.startSessionInProgress) {
         if (duplicatePlayerName(state.playerName)) {
             cerror("Duplicate player name", state.playerName, "- please choose another name");
@@ -597,6 +598,12 @@ serverSocket.on("players:online", (players) => {
             }
         });
     }
+});
+
+serverSocket.on("leaderboard", (leaderboard) => {
+    state.leaderboard = leaderboard;
+    uiEmitLeaderboard();
+    vlog("Leaderboard :", state.leaderboard);
 });
 
 serverSocket.on("schedule", (schedule) => {
@@ -779,6 +786,10 @@ function uiEmitPlayersOnline() {
     ui.emit("players:online", state.players);
 }
 
+function uiEmitLeaderboard() {
+    ui.emit("leaderboard", state.leaderboard);
+}
+
 function uiEmitCompletedGames() {
     let stats = {t: 0, w: 0, l: 0, d: 0, wp: 0, w1p: 0, w2p: 0, lp: 0, dp: 0};
     for (let i = 0; i < state.completedGames.length; i++) {
@@ -816,6 +827,7 @@ ui.on("connection", (socket) => {
     uiEmitServerConnected();
     uiEmitGameStatus();
     uiEmitPlayersOnline();
+    uiEmitLeaderboard();
     uiEmitCompletedGames();
     uiEmitServerStatus();
     socket.on("disconnect", (reason) => {

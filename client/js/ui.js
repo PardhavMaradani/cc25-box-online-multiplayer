@@ -362,6 +362,28 @@ socket.on("game:status", (game) => {
     document.getElementById("currentMatch").innerHTML = currentMatch.innerHTML;
 });
 
+socket.on("leaderboard", (leaderboard) => {
+    const now = Date.now();
+    Object.entries(leaderboard).forEach(([player, details]) => {
+        details.name = player;
+        details.lastSeen = Math.floor(Math.abs(now - details.lastSeen) / 86400000);
+        if (details.rating == undefined || details.nGames < 100) {
+            details.rating = -4000;
+        }
+    });
+    const sortedLeaderboard = Object.values(leaderboard).sort((a,b) => b.rating - a.rating);
+    document.getElementById("nLBPlayers").innerText = sortedLeaderboard.length;
+    const leaderboardList = document.createElement("tbody");
+    let i = 1;
+    sortedLeaderboard.forEach((item) => {
+        const row = leaderboardList.insertRow();
+        row.insertCell().innerText = i++;
+        row.insertCell().innerHTML = item.name + "<div><small class='fw-light'>" + item.lastSeen + "d ago, " + item.nGames + " games</small></div>";
+        row.insertCell().innerText = item.rating == -4000 ? "-" : item.rating;
+    });
+    document.getElementById("leaderboardList").innerHTML = leaderboardList.innerHTML;
+});
+
 socket.on("players:online", (playersOnline) => {
     players = Object.keys(playersOnline);
     const sortedPlayers = Object.entries(playersOnline).sort((a,b) => b[1]-a[1]);

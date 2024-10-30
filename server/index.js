@@ -271,6 +271,7 @@ function checkCurrentRoundDone() {
             // calculate ratings
             calculate_ratings();
             emitPlayersOnline(); // to show updated ratings
+            emitLeaderboard();
             emitNewSchedule();
         }
     }
@@ -373,6 +374,14 @@ function emitPlayersOnline(socket) {
     }
 }
 
+function emitLeaderboard(socket) {
+    if (socket) {
+        server.to(socket.id).emit("leaderboard", db.data.players);
+    } else {
+        server.emit("leaderboard", db.data.players);
+    }
+}
+
 function emitPlayers(socket) { // deprecated - use emitPlayersOnline
     const players = Object.keys(state.players);
     if (socket) {
@@ -461,6 +470,7 @@ function updateLastSeen(player) {
 server.on("connection", (socket) => {
     vlog("Client connected");
     emitPlayers(socket);
+    emitLeaderboard(socket);
     uiEmitStatus();
     socket.on("disconnect", (reason, details) => {
       const player = state.socket2Player[socket.id];

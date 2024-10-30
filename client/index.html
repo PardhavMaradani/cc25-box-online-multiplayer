@@ -242,6 +242,29 @@
                             </div>
                         </div>
                     </div>
+                    <div class="accordion mt-2">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button rounded-top" type="button" data-bs-toggle="collapse" data-bs-target="#leaderboardPanel"">
+                                    Leaderboard &nbsp; <span id="nLBPlayers" class="badge text-bg-secondary">0</span>
+                                </button>
+                            </h2>
+                            <div id="leaderboardPanel" class="accordion-collapse collapse show">
+                                <div class="table-responsive" style="max-height:500px;overflow-y:scroll;">
+                                    <table class="table table-sm table-bordered m-0 table-light">
+                                        <thead class="table-secondary">
+                                            <tr>
+                                                <th scope="col"></th>
+                                                <th scope="col">Name</th>
+                                                <th scope="col">Rating</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="leaderboardList"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div id="allGamesDiv" class="col-md-9 mt-2">
                     <a id="allGames" href="" class="btn btn-link icon-link pe-2" target="_blank">All Games</a>|<a id="clearAllGames" href="" class="btn btn-link icon-link ps-2">Clear All Games</a>
