@@ -415,7 +415,11 @@ socket.on("completed:games", (n, games, stats, programBasename) => {
     if (n > 0) {
         nCompleted.classList.remove("text-bg-secondary");
         nCompleted.classList.add("text-bg-success");
-        document.getElementById("completedGamesInfo").innerText = "Last " + games.length + " completed game" + (games.length > 1 ? "s" : "");
+        if (games.length <= 100) {
+            document.getElementById("completedGamesInfo").innerHTML = "Last " + games.length + " game" + (games.length > 1 ? "s" : "") + " <small>[ Need 100+ for rating ]</small>";
+        } else {
+            document.getElementById("completedGamesInfo").innerText = "Last " + games.length + " completed game" + (games.length > 1 ? "s" : "");
+        }
     } else {
         nCompleted.classList.remove("text-bg-success");
         nCompleted.classList.add("text-bg-secondary");

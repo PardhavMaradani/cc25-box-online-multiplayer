@@ -95,5 +95,4 @@ All the details about the **server** component can be found in the [Server](serv
 
 ## Performance Ratings
 
-Details about how the performance ratings are calculated and the simulation code can be found in the [perf-rating](server/perf-rating/) directory.  The JavaScript implementation of the same can be found in the Server [code](server/index.js#L177).
-
+Details about how the performance ratings are calculated and the simulation code can be found in the [perf-rating](server/perf-rating/) directory.  The JavaScript implementation of the same can be found in the Server [code](server/index.js#L177).  Players need to have at least 100+ games completed to get a rating.

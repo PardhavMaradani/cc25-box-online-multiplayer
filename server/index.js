@@ -198,8 +198,8 @@ function calculate_performance(approx_rating, player) {
     /* binary search to find the most likely rating */
     while (high > low + 1.0) {
         let actual_score = 0, expected_score = 1e-5;
-        state.rr.players.forEach(opponent => {
-            if (player == opponent || stats[player][opponent].nGames == 0) return;
+        Object.keys(db.data.players).forEach(opponent => {
+            if (player == opponent || stats[player][opponent] == null || stats[player][opponent].nGames == 0) return;
             const win_prob = elo_win_prob(guessed_rating - approx_rating[opponent]);
             expected_score += stats[player][opponent].nGames * win_prob;
             actual_score += stats[player][opponent].nWins;
@@ -212,7 +212,7 @@ function calculate_performance(approx_rating, player) {
 }
 
 function calculate_ratings() {
-    const players = state.rr.players;
+    const players = Object.keys(db.data.players);
     const stats = db.data.stats;
     const approx_rating = {};
 
@@ -221,7 +221,7 @@ function calculate_ratings() {
     approx_rating[anchor] = 0;
     players.forEach(player => {
         if (player == anchor) return;
-        if (stats[player][anchor].nGames == 0) {
+        if (stats[player][anchor] == null || stats[player][anchor].nGames == 0) {
             approx_rating[player] = 1200;
             return;
         }
