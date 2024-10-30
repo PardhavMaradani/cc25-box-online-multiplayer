@@ -5,13 +5,14 @@ All the source code for the **client** component resides in this folder.
 Here are all the command line options available to run the client:
 
 ```
-Usage: npm start -- -s <server_url> -p <program> [-n <player_name>] [-t <server_timeout>] [-u <ui_port>] [-x] [-f] [-a] [-v] [-h]
+Usage: npm start -- -s <server_url> -p <program> [-n <player_name>] [-e <passphrase>] [-t <server_timeout>] [-u <ui_port>] [-x] [-f] [-a] [-v] [-h]
 Options:
   Required:
     -s|--serverURL     : server URL (required)
     -p|--program       : program to run (required)
   Optional:
     -n|--playerName    : player name (default: program name)
+    -e|--passphrase    : register player name for exclusive use (default: none)
     -t|--serverTimeout : timeout in seconds for server socket (default: 5 seconds)
     -u|--uiPort        : port number to listen for UI (default: 3000)
     -m|--maxGamesInUI  : max completed games to list in UI (default: 512)
@@ -30,6 +31,7 @@ Most of the options should be self explanatory.  Here are some more details abou
 - The box program passed via the `-p|--program` option needs to be a single executable file
   - Programs written in some languages might need to be packaged within an executable script
 - The `-n|--playerName` option allows you to specify a virtual player name (validation is done for duplicates at runtime)
+- The `-e|--passphrase` option allows you to register your player name for exclusive use.  No other player will be able to use this name without the passphrase.  A `sha256` hash of this is sent over to the server and stored there and validated every time during session start.  **It is strongly recommended to use this option to prevent your player name takeover by others, which can impact the bot rating**
 - The `-u|--uiPort` option allows you to specify a custom port for the local client UI
 - The `-m|--maxGamesInUI` option allows you to specify the maximum number of games that get listed in the UI.  Note that all games are still available via the `All games` link in the UI
 - The `-x|--noUI` option disables listening on the UI port.  This could be useful if you cannot listen on a port or don't need the UI controls

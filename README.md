@@ -2,7 +2,7 @@
 
 An unofficial online multiplayer version of [CodeCup 2025](https://www.codecup.nl/intro.php) contest game [Box](https://www.codecup.nl/rules.php).
 
-The purpose of this is to allow contestants to have their programs play against other programs **online** while they build and improve their programs for the test and final competitions of CodeCup 2025.  Contestants don't have to share their source code or the program binaries - their programs runs locally on their own systems and **only** the game moves are transmitted over to the other players - everything else like the completed game HTML's and logs generated are all local to the contestant.
+The purpose of this is to allow contestants to have their programs play against other programs **online** while they build and improve their programs for the test and final competitions of CodeCup 2025.  Contestants don't have to share their source code or the program binaries - their programs runs locally on their own systems and **only** the game moves are transmitted over to the other players - everything else like the completed game HTML's and logs generated are all local to the contestant.  A performance rating for each of the player is also assigned to help players gauge the competitiveness of their bots with respect to others.
 
 The Box Online Multiplayer version has two components.  A **server** component that is hosted on a publicly accessible server and a **client** component that contestants run locally on their systems which invokes their program to play the Box games.  This repo has sources for both the components, but contestants only need the **client** component to participate.
 
@@ -12,6 +12,7 @@ The Box Online Multiplayer version has two components.  A **server** component t
 - [Hosted Server](#hosted-server)
 - [Client Component](#client-component)
 - [Server Component](#server-component)
+- [Performance Ratings](#performance-ratings)
 
 ## Getting Started
 
@@ -44,7 +45,11 @@ You should see somthing like this in the browser while the games are in progress
 
 ## Game Results and Logs
 
-You can click on the **Result** link in the games under the `Completed Games` section to see a familiar [`caia`](https://www.codecup.nl/download_caia.php) generated game HTML output as follows:
+You can look under the `Completed Games` section to see the results of the recently completed games.  A free text filter can be used to filter the results as shown here:
+
+![Filter Completed Games](images/completed-games-filter.png)
+
+You can click on the **Result** link of each game to see a familiar [`caia`](https://www.codecup.nl/download_caia.php) generated game HTML output as follows:
 
 ![Sample game result](images/sample-game-result.png)
 
@@ -87,4 +92,8 @@ All the details about the **client** component can be found in the [Client](clie
 ## Server Component
 
 All the details about the **server** component can be found in the [Server](server/README.md) page.
+
+## Performance Ratings
+
+Details about how the performance ratings are calculated and the simulation code can be found in the [perf-rating](server/perf-rating/) directory.  The JavaScript implementation of the same can be found in the Server [code](server/index.js#L177).
 

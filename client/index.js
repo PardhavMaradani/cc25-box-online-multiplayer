@@ -13,7 +13,7 @@ const params = {};
 
 function showUsageAndExit(retVal) {
     const usage =
-      "Usage: npm start -- -s <server_url> -p <program> [-n <player_name>] [-t <server_timeout>] [-u <ui_port>] [-x] [-f] [-a] [-v] [-h]\n" +
+      "Usage: npm start -- -s <server_url> -p <program> [-n <player_name>] [-e <passphrase>] [-t <server_timeout>] [-u <ui_port>] [-x] [-f] [-a] [-v] [-h]\n" +
       "Options:\n" +
       "  Required:\n" +
       "    -s|--serverURL     : server URL (required)\n" +
@@ -160,6 +160,8 @@ try {
     params.passphrase = values["passphrase"];
     if (params.passphrase != null) {
         params.passphrase = crypto.createHash("sha256").update(params.passphrase).digest("hex");
+    } else {
+        console.error("Warning: No passphrase provided - player name may be used by others too, see -h for help");
     }
     const serverTimeout = Number(values["serverTimeout"]);
     if (isNaN(serverTimeout) || serverTimeout < 0) {
