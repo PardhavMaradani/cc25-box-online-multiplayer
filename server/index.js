@@ -221,7 +221,7 @@ function calculate_ratings() {
     approx_rating[anchor] = 0;
     players.forEach(player => {
         if (player == anchor) return;
-        if (stats[player] != null || stats[player][anchor] == null || stats[player][anchor].nGames == 0) {
+        if (stats[player] == null || stats[player][anchor] == null || stats[player][anchor].nGames == 0) {
             approx_rating[player] = 1200;
             return;
         }
