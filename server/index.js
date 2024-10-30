@@ -124,6 +124,7 @@ httpServer.listen(params.port, () => {
 });
 
 const defaultData = {
+    registered: {},
     players: {
         "caia-player1": { nGames: 200000 },
         "caia-player2": { nGames: 200000 },
@@ -467,6 +468,48 @@ function updateLastSeen(player) {
     saveDB();
 }
 
+function sessionStart(socket, player, passphrase, ack) {
+    if (!(ack instanceof Function)) {
+        cerror("session:start - ack not a function", ack);
+        return;
+    }
+    const nPlayers = Object.keys(state.players).length;
+    if (nPlayers == 128) {
+        ack({ status: "error", message: "Too many players" });
+        cerror("session:start - Too many players");
+        return;
+    }
+    if (player == null || !/^[\w\-.]+$/.test(player) || player.length > 32) {
+        ack({ status: "error", message: "Invalid player name" });
+        cerror("session:start - Invalid player name", player);
+        return;
+    }
+    if (state.players[player]) {
+        ack({ status: "error", message: "Player already exists" });
+        cerror("session:start - Player already exists", player);
+        return;
+    }
+    if (db.data.registered[player]) {
+        if (passphrase != db.data.registered[player]) {
+            ack({ status: "error", message: "Invalid passphrase" });
+            cerror("session:start - Invalid passphrase for", player);
+            return;
+        }
+    } else if (passphrase != null) {
+        db.data.registered[player] = passphrase;
+        // saveDB(); // saved with last seen
+    }
+    state.players[player] = { inRR: false };
+    state.socket2Player[socket.id] = player;
+    updateLastSeen(player);
+    vlog("Session started for player", player);
+    ack({ status: "ok" });
+    emitPlayers();
+    if (nPlayers + 1 == params.minRRPlayers) {
+        emitNewSchedule();
+    }
+}
+
 server.on("connection", (socket) => {
     vlog("Client connected");
     emitPlayers(socket);
@@ -484,30 +527,10 @@ server.on("connection", (socket) => {
       }
     });
     socket.on("session:start", (player, ack) => {
-        if (!(ack instanceof Function)) {
-            cerror("session:start - ack not a function", ack);
-            return;
-        }
-        const nPlayers = Object.keys(state.players).length;
-        if (nPlayers == 128) {
-            ack({ status: "error", message: "Too many players" });
-            cerror("session:start - Too many players");
-            return;
-        }
-        if (player == null || !/^[\w\-.]+$/.test(player) || player.length > 32) {
-            ack({ status: "error", message: "Invalid player name" });
-            cerror("session:start - Invalid player name", player);
-            return;
-        }
-        state.players[player] = { inRR: false };
-        state.socket2Player[socket.id] = player;
-        updateLastSeen(player);
-        vlog("Session started for player", player);
-        ack({ status: "ok" });
-        emitPlayers();
-        if (nPlayers + 1 == params.minRRPlayers) {
-            emitNewSchedule();
-        }
+        sessionStart(socket, player, null, ack);
+    });
+    socket.on("session:start:v2", (player, passphrase, ack) => {
+        sessionStart(socket, player, passphrase, ack);
     });
     socket.on("session:stop", (ack) => {
         if (!(ack instanceof Function)) {

@@ -3,6 +3,7 @@ import { join, basename } from 'node:path';
 import { createServer } from 'node:http';
 import { parseArgs } from 'node:util';
 import { spawn } from 'node:child_process';
+import crypto from 'node:crypto';
 import Client from 'socket.io-client';
 import serveIndex from 'serve-index';
 import express from 'express';
@@ -19,6 +20,7 @@ function showUsageAndExit(retVal) {
       "    -p|--program       : program to run (required)\n" +
       "  Optional:\n" +
       "    -n|--playerName    : player name (default: program name)\n" +
+      "    -e|--passphrase    : register player name for exclusive use (default: none)\n" +
       "    -t|--serverTimeout : timeout in seconds for server socket (default: 5 seconds)\n" +
       "    -u|--uiPort        : port number to listen for UI (default: 3000)\n" +
       "    -m|--maxGamesInUI  : max completed games to list in UI (default: 512)\n" +
@@ -65,6 +67,10 @@ try {
         playerName: {
             type: "string",
             short: "n"
+        },
+        passphrase: {
+            type: "string",
+            short: "e"
         },
         serverTimeout: {
             type: "string",
@@ -150,6 +156,10 @@ try {
         params.playerName = playerName;
     } else {
         params.playerName = programBasename;
+    }
+    params.passphrase = values["passphrase"];
+    if (params.passphrase != null) {
+        params.passphrase = crypto.createHash("sha256").update(params.passphrase).digest("hex");
     }
     const serverTimeout = Number(values["serverTimeout"]);
     if (isNaN(serverTimeout) || serverTimeout < 0) {
@@ -246,7 +256,7 @@ function startSession(ack) {
         return;
     }
     state.startSessionInProgress = true;
-    serverSocket.timeout(params.serverTimeout * 1000).emit("session:start", state.playerName, (timeoutError, response) => {
+    serverSocket.timeout(params.serverTimeout * 1000).emit("session:start:v2", state.playerName, params.passphrase, (timeoutError, response) => {
         if (timeoutError) {
             ack({ status: "error", message: timeoutError.message });
             cerror("startSession timeout :", timeoutError.message);
