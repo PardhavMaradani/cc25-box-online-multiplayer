@@ -1,9 +1,12 @@
 import { Server } from 'socket.io';
-import { join } from 'node:path';
+import { join, dirname } from 'node:path';
 import { createServer } from 'node:http';
 import { parseArgs } from 'node:util';
+import {fileURLToPath} from 'node:url';
 import express from 'express';
 import { JSONFilePreset } from 'lowdb/node';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const params = {};
 
@@ -114,10 +117,10 @@ httpServer.on("error", (error) => {
 });
 app.use("/js", express.static("js"));
 app.use("/css", express.static("css"));
-app.use("/css", express.static(join(import.meta.dirname, "node_modules/bootstrap/dist/css")));
-app.use("/js", express.static(join(import.meta.dirname, "node_modules/bootstrap/dist/js")));
+app.use("/css", express.static(join(__dirname, "node_modules/bootstrap/dist/css")));
+app.use("/js", express.static(join(__dirname, "node_modules/bootstrap/dist/js")));
 app.get("/", (req, res) => {
-    res.sendFile(join(import.meta.dirname, "index.html"));
+    res.sendFile(join(__dirname, "index.html"));
 });
 httpServer.listen(params.port, () => {
     clog("Server is listening on port", httpServer.address().port);
