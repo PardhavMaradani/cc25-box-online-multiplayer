@@ -83,6 +83,8 @@ All the game HTML files will be generated as before and can be found in the `all
 
 The Box Online Multiplayer **server** is hosted on a `e2-micro` VM instance in the `us-west1` region of [Google Cloud Platform](https://cloud.google.com/) (GCP) as this falls under the free-tier.  The server is accessible via a free [No-IP](https://www.noip.com) hostname as [https://box.servegame.com](https://box.servegame.com).  This is what the **clients** connect to by specifying the `-s https://box.servegame.com` option.  The [https://box.servegame.com](https://box.servegame.com) URL also show the current status of the server.
 
+![Server status](images/server-status.png)
+
 The source for the **server** component and all other details to host your own local / hosted server if required are available in the [Server](server/README.md) and [Docker](docker/README.md) pages.
 
 ## Client Component
