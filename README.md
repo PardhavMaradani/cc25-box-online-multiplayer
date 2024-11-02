@@ -13,6 +13,7 @@ The Box Online Multiplayer version has two components.  A **server** component t
 - [Client Component](#client-component)
 - [Server Component](#server-component)
 - [Performance Ratings](#performance-ratings)
+- [How it works](#how-it-works)
 
 ## Getting Started
 
