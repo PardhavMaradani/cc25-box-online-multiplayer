@@ -98,3 +98,127 @@ All the details about the **server** component can be found in the [Server](serv
 ## Performance Ratings
 
 Details about how the performance ratings are calculated and the simulation code can be found in the [perf-rating](server/perf-rating/) directory.  The JavaScript implementation of the same can be found in the Server [code](server/index.js#L177).  Players need to have at least 100+ games completed to get a rating.
+
+## How it works
+
+Here is a rough simplistic block diagram of the overall architecture (drawn in [Excalidraw](https://excalidraw.com)):
+
+![Block Diagram](images/block-diagram.png)
+
+- [Socket.io](https://socket.io) is the one that provides realtime communication between various components.
+- Both the server and client components are [Node.js](https://nodejs.org/) applications
+
+### Server
+
+Here is a quick outline of what the server side code does:
+
+```
+// Emits
+server.emit("players:online", ...
+    // Current players online (i.e., with sessions)
+
+server.emit("schedule", ...
+    // Round-robin schedules
+
+server.emit("status", ...
+    // Server status
+
+server.emit("round:timeout", ...
+    // When a round timesout
+
+server.emit("leaderboard", ...
+    // Leaderboard stats
+
+
+// Listeners
+socket.on("session:start", ...
+    // for start session from clients
+
+socket.on("session:stop", ...
+    // for stop session from clients
+
+socket.on("game:ready", ...
+    // for game ready from both the clients
+    // When both are ready, initiates game by sending starting colors, starting tile etc
+
+socket.on("game:move", ...
+    // for game moves from clients
+    // Multiplexes moves to the opponent client
+
+socket.on("game:done", ...
+    // for game done from both the clients
+    // exchanges the score, calculates ratings etc
+
+```
+
+- Server generates repeated round-robin schedules with all the current online players
+- Server sets a timeout for each round of the round-robin to ensure that any games that aren't completed (due to any reason) don't block other rounds and things continue to move forward
+- Server waits for a ready signal from both the clients before it initiates a game
+- Server then multiplexes moves between both the clients till the games complete
+- Server UI shows the current round-robin state, current players online and the ratings leaderboard
+- [lowdb](https://github.com/typicode/lowdb) is used for saving the rating related data 
+- Server uses [Express](https://expressjs.com) to serve UI pages
+
+### Client
+
+Here is a quick outline of what the client side code does:
+
+```
+// Listeners
+serverSocket.on("players:online", ...
+    // for all current players online
+
+serverSocket.on("leaderboard", ...
+    // for rating leaderboard stats
+
+serverSocket.on("schedule", ...
+    // for new round-robin schedules
+
+serverSocket.on("status", ...
+    // for server status
+
+serverSocket.on("opponent:ready", ...
+    // for opponent ready of a particular game
+    // server sends this when both the players are ready for a game
+
+serverSocket.on("game:move", ...
+    // for game moves (initial moves from server and other moves from opponent)
+
+serverSocket.on("game:done", ...
+    // for game done indication with opponent color, score etc
+
+serverSocket.on("round:timeout", ...
+    // for a round-robin round timeout
+    // cancels all games in the timedout round and moves forward
+
+// I/O with box executable
+program.on("spawn", ...
+    // box executable successfully spawned
+    // sends game:ready to server
+
+gameState.program.stdin.write(...
+    // writes game moves to the box executable stdin
+
+program.stdout.on("data", ...
+    // reads game moves from the box executable stdout
+
+program.stderr.on("data",
+   // reads game logs from the box executable stderr
+```
+
+- Box executable programs follow a strict protocol as described [here](https://www.codecup.nl/box/rules.php)
+- Client establishes a session with the server, listens for schedules using the `socket.io-client` library
+- Client generates a game list from the server sent round-robin schedule and starts games in that order
+- Client spawns the box executable for each game, sends a `game:ready` and proxies moves received from the server to the executable (writes to `stdin`, reads from `stdout`)
+- Client maintains a running state of the current game to determine if the game is done (i.e., no more moves)
+- Client generates the game HTML which includes the executable logs (read from `stderr`), stats, etc
+- Client emits all the state and data received from the server to the local Client UI
+- Client uses [Express](https://expressjs.com) to serve UI pages
+
+### UI
+
+- [Bootstrap](https://getbootstrap.com) is used for all the UI pages
+- [Socket.io Client API](https://socket.io/docs/v4/client-api/) is used by the UI page to get realtime data from the Client Node.js app
+- Because of Bootstrap all UI is responsive, mobile friendly etc as seen below:
+
+![Mobile UI](images/mobile-ui.png)
