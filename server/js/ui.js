@@ -41,9 +41,6 @@ socket.on("leaderboard", (leaderboard) => {
     const leaderboardList = document.createElement("tbody");
     let i = 1;
     sortedLeaderboard.forEach((item) => {
-        if (item.nGames < 1) {
-            return;
-        }
         const row = leaderboardList.insertRow();
         row.insertCell().innerText = i++;
         row.insertCell().innerHTML = item.name + "<div><small class='fw-light'>" + item.lastSeen + "d ago, " + item.nGames + " games</small></div>";

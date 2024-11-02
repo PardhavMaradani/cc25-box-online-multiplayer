@@ -377,9 +377,6 @@ socket.on("leaderboard", (leaderboard) => {
     let i = 1;
     const playerName = document.getElementById("playerName").value;
     sortedLeaderboard.forEach((item) => {
-        if (item.nGames < 1) {
-            return;
-        }
         const row = leaderboardList.insertRow();
         if (item.name == playerName) {
             row.classList.add("table-info");
