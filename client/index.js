@@ -197,6 +197,7 @@ try {
 
 const state = {
     serverConnected: false,
+    previouslyInSession: false,
     autoStart: params.autoStart,
     playerName: params.playerName,
     players: {},
@@ -590,6 +591,7 @@ serverSocket.on("connect_error", (error) => {
 
 serverSocket.on("disconnect", (reason, details) => {
     state.serverConnected = false;
+    state.previouslyInSession = state.inSession;
     clearSessionAndGameState();
     uiEmitServerConnected();
     cerror("Disconnected from server", params.serverURL);
@@ -599,7 +601,7 @@ serverSocket.on("players:online", (players) => {
     state.players = players;
     uiEmitPlayersOnline();
     vlog("Players online :", state.players);
-    if (state.autoStart && !state.inSession && !state.startSessionInProgress) {
+    if ((state.autoStart || state.previouslyInSession) && !state.inSession && !state.startSessionInProgress) {
         if (duplicatePlayerName(state.playerName)) {
             cerror("Duplicate player name", state.playerName, "- please choose another name");
             process.exit(1);
@@ -856,6 +858,7 @@ ui.on("connection", (socket) => {
     socket.on("session:stop", (ack) => {
         stopSession(ack);
         state.autoStart = false;
+        state.previouslyInSession = false;
     });
     socket.on("clear:games", (ack) => {
         clearAllGames(ack);

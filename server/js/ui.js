@@ -37,15 +37,18 @@ socket.on("leaderboard", (leaderboard) => {
         }
     });
     const sortedLeaderboard = Object.values(leaderboard).sort((a,b) => b.rating - a.rating);
-    document.getElementById("nLBPlayers").innerText = sortedLeaderboard.length;
     const leaderboardList = document.createElement("tbody");
     let i = 1;
     sortedLeaderboard.forEach((item) => {
+        if (item.nGames < 1) {
+            return;
+        }
         const row = leaderboardList.insertRow();
         row.insertCell().innerText = i++;
         row.insertCell().innerHTML = item.name + "<div><small class='fw-light'>" + item.lastSeen + "d ago, " + item.nGames + " games</small></div>";
         row.insertCell().innerText = item.rating == -4000 ? "-" : item.rating;
     });
+    document.getElementById("nLBPlayers").innerText = i - 1;
     document.getElementById("leaderboardList").innerHTML = leaderboardList.innerHTML;
 });
 
