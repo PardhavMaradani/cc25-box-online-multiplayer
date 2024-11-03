@@ -250,7 +250,9 @@ function calculate_ratings() {
     vlog("Ratings", JSON.stringify(approx_rating, null, 2));
     const now = Date.now();
     Object.keys(approx_rating).forEach(player => {
-        db.data.players[player].lastSeen = now;
+        if (validRRPlayer(player)) {
+            db.data.players[player].lastSeen = now;
+        }
         db.data.players[player].rating = Number(approx_rating[player].toFixed(0));
     });
     saveDB();
