@@ -287,6 +287,7 @@ function setNewRoundTimeout() {
     state.rr.roundTimeout = setTimeout(() => {
         if (state.rr.rounds[state.rr.currentRound].nDone == state.rr.gamesPerRound) {
             cerror("RR", state.rr.rrN, "round", state.rr.currentRound, "timedout, but all games done");
+            checkCurrentRoundDone();
             return;
         }
         vlog("RR", state.rr.rrN, "round", state.rr.currentRound, "timedout");
