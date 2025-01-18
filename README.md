@@ -1,5 +1,12 @@
 # CodeCup 2025 Box Online Multiplayer
 
+> ### Update: 18th Jan 2025
+> [CodeCup 2025](https://www.codecup.nl/intro.php) concluded on 18th Jan 2025. The hosted server `box.servegame.com` is also shutdown to coincide with this. Thanks to everyone who participated here, contributed and shared feedback. Here is a snapshot of the stats on the server before it was shutdown:
+>
+> ![CC25 Final Snapshot](images/cc25-final-snapshot.png)
+
+***
+
 An unofficial online multiplayer version of [CodeCup 2025](https://www.codecup.nl/intro.php) contest game [Box](https://www.codecup.nl/rules.php).
 
 The purpose of this is to allow contestants to have their programs play against other programs **online** while they build and improve their programs for the test and final competitions of CodeCup 2025.  Contestants don't have to share their source code or the program binaries - their programs runs locally on their own systems and **only** the game moves are transmitted over to the other players - everything else like the completed game HTML's and logs generated are all local to the contestant.  A performance rating for each of the player is also assigned to help players gauge the competitiveness of their bots with respect to others.
